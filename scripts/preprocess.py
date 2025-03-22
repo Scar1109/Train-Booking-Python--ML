@@ -1,29 +1,52 @@
 import pandas as pd
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-
-# Load the dataset
-df = pd.read_csv('data/fraud_data.csv')
-
-# Handle missing values (if any)
-df.fillna(df.mean(), inplace=True)
-
-# Encode categorical features (e.g., 'payment_method' to numeric)
-label_encoder = LabelEncoder()
-df['payment_method'] = label_encoder.fit_transform(df['payment_method'])
-
-# Separate features and target
-X = df.drop('is_fraud', axis=1)  # Features
-y = df['is_fraud']              # Target
-
-# Normalize the feature data
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Save the scaler to reuse it during prediction
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 import joblib
-joblib.dump(scaler, 'models/scaler.pkl')
 
-# Save the processed data (optional)
-df_processed = pd.DataFrame(X_scaled, columns=X.columns)
-df_processed['is_fraud'] = y
-df_processed.to_csv('data/processed_fraud_data.csv', index=False)
+# Load the user fraud dataset
+user_df = pd.read_csv('data/user_fraud_data.csv')
+
+# User Fraud Detection: Features and target variable
+X_user = user_df.drop('is_fraud', axis=1)
+y_user = user_df['is_fraud']
+
+# Scale the features for user fraud detection
+user_scaler = StandardScaler()
+X_user_scaled = user_scaler.fit_transform(X_user)
+
+# Train-test split
+X_user_train, X_user_test, y_user_train, y_user_test = train_test_split(X_user_scaled, y_user, test_size=0.2, random_state=42)
+
+# Train the RandomForest model for user fraud detection
+user_model = RandomForestClassifier(n_estimators=100, random_state=42)
+user_model.fit(X_user_train, y_user_train)
+
+# Save the trained user model and scaler
+joblib.dump(user_model, 'models/user_fraud_model.pkl')
+joblib.dump(user_scaler, 'models/user_scaler.pkl')
+
+
+# Load the booking fraud dataset
+booking_df = pd.read_csv('data/booking_fraud_data.csv')
+
+# Booking Fraud Detection: Features and target variable
+X_booking = booking_df[['num_tickets', 'payment_method', 'ip_address', 'user_booking_count', 'user_avg_tickets']]
+y_booking = booking_df['is_fraud']
+
+# Scale the features for booking fraud detection
+booking_scaler = StandardScaler()
+X_booking_scaled = booking_scaler.fit_transform(X_booking)
+
+# Train-test split
+X_booking_train, X_booking_test, y_booking_train, y_booking_test = train_test_split(X_booking_scaled, y_booking, test_size=0.2, random_state=42)
+
+# Train the RandomForest model for booking fraud detection
+booking_model = RandomForestClassifier(n_estimators=100, random_state=42)
+booking_model.fit(X_booking_train, y_booking_train)
+
+# Save the trained booking model and scaler
+joblib.dump(booking_model, 'models/booking_fraud_model.pkl')
+joblib.dump(booking_scaler, 'models/booking_scaler.pkl')
+
+print("Model training completed and models saved.")
