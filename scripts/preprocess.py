@@ -1,52 +1,107 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+import numpy as np
+import json
+import os
 from sklearn.preprocessing import StandardScaler
 import joblib
 
-# Load the user fraud dataset
-user_df = pd.read_csv('data/user_fraud_data.csv')
+def preprocess_user_data(user_data):
+    """
+    Preprocess user data for fraud detection
+    
+    Args:
+        user_data (dict): User data with booking statistics
+        
+    Returns:
+        dict: Preprocessed user data ready for model input
+    """
+    # Convert payment method to numeric
+    payment_method_map = {'credit_card': 1, 'debit_card': 2, 'paypal': 3}
+    
+    # Extract features
+    features = {
+        'total_tickets': user_data['total_tickets'],
+        'booking_count': user_data['booking_count'],
+        'distinct_payment_methods': user_data['distinct_payment_methods'],
+        'distinct_ip_addresses': user_data['distinct_ip_addresses']
+    }
+    
+    # Load scaler
+    scaler = joblib.load('models/user_scaler.pkl')
+    
+    # Scale features
+    features_df = pd.DataFrame([features])
+    scaled_features = scaler.transform(features_df)
+    
+    return scaled_features
 
-# User Fraud Detection: Features and target variable
-X_user = user_df.drop('is_fraud', axis=1)
-y_user = user_df['is_fraud']
+def preprocess_booking_data(booking_data):
+    """
+    Preprocess booking data for fraud detection
+    
+    Args:
+        booking_data (dict): Booking data with user statistics
+        
+    Returns:
+        dict: Preprocessed booking data ready for model input
+    """
+    # Convert payment method to numeric
+    payment_method_map = {'credit_card': 1, 'debit_card': 2, 'paypal': 3}
+    payment_method = payment_method_map.get(booking_data['payment_method'], 0)
+    
+    # Extract IP address feature (last octet)
+    ip_last_octet = int(booking_data['ip_address'].split('.')[-1])
+    
+    # Extract features
+    features = {
+        'num_tickets': booking_data['num_tickets'],
+        'payment_method': payment_method,
+        'ip_address': ip_last_octet,
+        'user_booking_count': booking_data['user_booking_count'],
+        'user_avg_tickets': booking_data['user_avg_tickets']
+    }
+    
+    # Load scaler
+    scaler = joblib.load('models/booking_scaler.pkl')
+    
+    # Scale features
+    features_df = pd.DataFrame([features])
+    scaled_features = scaler.transform(features_df)
+    
+    return scaled_features
 
-# Scale the features for user fraud detection
-user_scaler = StandardScaler()
-X_user_scaled = user_scaler.fit_transform(X_user)
+def main():
+    """
+    Example of how to use the preprocessing functions
+    """
+    # Example user data
+    user_data = {
+        'total_tickets': 15,
+        'booking_count': 3,
+        'distinct_payment_methods': 2,
+        'distinct_ip_addresses': 1,
+        'payment_method': 'credit_card',
+        'ip_address': '192.168.1.1'
+    }
+    
+    # Example booking data
+    booking_data = {
+        'num_tickets': 5,
+        'payment_method': 'credit_card',
+        'ip_address': '192.168.1.1',
+        'user_booking_count': 3,
+        'user_avg_tickets': 5.0
+    }
+    
+    # Preprocess data
+    user_features = preprocess_user_data(user_data)
+    booking_features = preprocess_booking_data(booking_data)
+    
+    print("Preprocessed user features:")
+    print(user_features)
+    
+    print("\nPreprocessed booking features:")
+    print(booking_features)
 
-# Train-test split
-X_user_train, X_user_test, y_user_train, y_user_test = train_test_split(X_user_scaled, y_user, test_size=0.2, random_state=42)
-
-# Train the RandomForest model for user fraud detection
-user_model = RandomForestClassifier(n_estimators=100, random_state=42)
-user_model.fit(X_user_train, y_user_train)
-
-# Save the trained user model and scaler
-joblib.dump(user_model, 'models/user_fraud_model.pkl')
-joblib.dump(user_scaler, 'models/user_scaler.pkl')
-
-
-# Load the booking fraud dataset
-booking_df = pd.read_csv('data/booking_fraud_data.csv')
-
-# Booking Fraud Detection: Features and target variable
-X_booking = booking_df[['num_tickets', 'payment_method', 'ip_address', 'user_booking_count', 'user_avg_tickets']]
-y_booking = booking_df['is_fraud']
-
-# Scale the features for booking fraud detection
-booking_scaler = StandardScaler()
-X_booking_scaled = booking_scaler.fit_transform(X_booking)
-
-# Train-test split
-X_booking_train, X_booking_test, y_booking_train, y_booking_test = train_test_split(X_booking_scaled, y_booking, test_size=0.2, random_state=42)
-
-# Train the RandomForest model for booking fraud detection
-booking_model = RandomForestClassifier(n_estimators=100, random_state=42)
-booking_model.fit(X_booking_train, y_booking_train)
-
-# Save the trained booking model and scaler
-joblib.dump(booking_model, 'models/booking_fraud_model.pkl')
-joblib.dump(booking_scaler, 'models/booking_scaler.pkl')
-
-print("Model training completed and models saved.")
+if __name__ == "__main__":
+    main()

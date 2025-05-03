@@ -1,72 +1,94 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+import numpy as np
+import json
+import os
 import joblib
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
 
-# --- User Fraud Detection Model ---
+# Create directories if they don't exist
+os.makedirs('models', exist_ok=True)
 
-# Load the preprocessed user data
-user_df = pd.read_csv('data/user_fraud_data.csv')
+# Load training data
+with open('data/user_training_data.json', 'r') as f:
+    user_data = json.load(f)
 
-# Encode categorical features to numeric
-user_df['payment_method'] = user_df['payment_method'].map({'credit_card': 1, 'debit_card': 2, 'paypal': 3})
-user_df['ip_address'] = user_df['ip_address'].apply(lambda x: int(x.split('.')[-1]))  # Convert IP address to numeric
+with open('data/booking_training_data.json', 'r') as f:
+    booking_data = json.load(f)
 
-# Features and target variable for user fraud detection
-X_user = user_df.drop('is_fraud', axis=1)  # Features
-y_user = user_df['is_fraud']  # Target variable
+# Convert to pandas DataFrames
+user_df = pd.DataFrame(user_data)
+booking_df = pd.DataFrame(booking_data)
 
-# Scale the user features
+# Preprocess user data
+user_features = ['total_tickets', 'booking_count', 'distinct_payment_methods', 'distinct_ip_addresses']
+user_X = user_df[user_features]
+user_y = user_df['is_fraudulent']
+
+# Preprocess booking data
+# Convert payment_method to numeric
+booking_df['payment_method'] = booking_df['payment_method'].map({'credit_card': 1, 'debit_card': 2, 'paypal': 3})
+# Extract last octet from IP address as a simple feature
+booking_df['ip_address'] = booking_df['ip_address'].apply(lambda x: int(x.split('.')[-1]))
+
+booking_features = ['num_tickets', 'payment_method', 'ip_address', 'user_booking_count', 'user_avg_tickets']
+booking_X = booking_df[booking_features]
+booking_y = booking_df['is_fraudulent']
+
+# Split data
+user_X_train, user_X_test, user_y_train, user_y_test = train_test_split(user_X, user_y, test_size=0.2, random_state=42)
+booking_X_train, booking_X_test, booking_y_train, booking_y_test = train_test_split(booking_X, booking_y, test_size=0.2, random_state=42)
+
+# Scale features
 user_scaler = StandardScaler()
-X_user_scaled = user_scaler.fit_transform(X_user)
+user_X_train_scaled = user_scaler.fit_transform(user_X_train)
+user_X_test_scaled = user_scaler.transform(user_X_test)
 
-# Split into training and test sets for user fraud detection
-X_user_train, X_user_test, y_user_train, y_user_test = train_test_split(X_user_scaled, y_user, test_size=0.2, random_state=42)
+booking_scaler = StandardScaler()
+booking_X_train_scaled = booking_scaler.fit_transform(booking_X_train)
+booking_X_test_scaled = booking_scaler.transform(booking_X_test)
 
-# Train the RandomForest model for user fraud detection
+# Train user fraud model
+print("Training user fraud detection model...")
 user_model = RandomForestClassifier(n_estimators=100, random_state=42)
-user_model.fit(X_user_train, y_user_train)
+user_model.fit(user_X_train_scaled, user_y_train)
 
-# Save the trained user model and scaler
+# Evaluate user model
+user_y_pred = user_model.predict(user_X_test_scaled)
+print("\nUser Fraud Detection Model Evaluation:")
+print(classification_report(user_y_test, user_y_pred))
+print("Confusion Matrix:")
+print(confusion_matrix(user_y_test, user_y_pred))
+
+# Train booking fraud model
+print("\nTraining booking fraud detection model...")
+booking_model = RandomForestClassifier(n_estimators=100, random_state=42)
+booking_model.fit(booking_X_train_scaled, booking_y_train)
+
+# Evaluate booking model
+booking_y_pred = booking_model.predict(booking_X_test_scaled)
+print("\nBooking Fraud Detection Model Evaluation:")
+print(classification_report(booking_y_test, booking_y_pred))
+print("Confusion Matrix:")
+print(confusion_matrix(booking_y_test, booking_y_pred))
+
+# Save models and scalers
 joblib.dump(user_model, 'models/user_fraud_model.pkl')
 joblib.dump(user_scaler, 'models/user_scaler.pkl')
-
-print("User fraud detection model trained and saved.")
-
-
-# --- Booking Fraud Detection Model ---
-
-# Load the preprocessed booking data
-booking_df = pd.read_csv('data/booking_fraud_data.csv')
-
-# Encode categorical features to numeric for booking data
-booking_df['payment_method'] = booking_df['payment_method'].map({'credit_card': 1, 'debit_card': 2, 'paypal': 3})
-booking_df['ip_address'] = booking_df['ip_address'].apply(lambda x: int(x.split('.')[-1]))  # Convert IP address to numeric
-
-# --- Calculate user_booking_count and user_avg_tickets ---
-
-# Calculate the number of bookings and average tickets for each user
-booking_df['user_booking_count'] = booking_df.groupby('user_id')['ticket_id'].transform('count')
-booking_df['user_avg_tickets'] = booking_df.groupby('user_id')['num_tickets'].transform('mean')
-
-# Now, we can safely select the required columns for training
-X_booking = booking_df[['num_tickets', 'payment_method', 'ip_address', 'user_booking_count', 'user_avg_tickets']]  # Example features
-y_booking = booking_df['is_fraud']  # Target variable
-
-# Scale the booking features
-booking_scaler = StandardScaler()
-X_booking_scaled = booking_scaler.fit_transform(X_booking)
-
-# Split into training and test sets for booking fraud detection
-X_booking_train, X_booking_test, y_booking_train, y_booking_test = train_test_split(X_booking_scaled, y_booking, test_size=0.2, random_state=42)
-
-# Train the RandomForest model for booking fraud detection
-booking_model = RandomForestClassifier(n_estimators=100, random_state=42)
-booking_model.fit(X_booking_train, y_booking_train)
-
-# Save the trained booking model and scaler
 joblib.dump(booking_model, 'models/booking_fraud_model.pkl')
 joblib.dump(booking_scaler, 'models/booking_scaler.pkl')
 
-print("Booking fraud detection model trained and saved.")
+print("\nModels and scalers saved to the 'models' directory.")
+
+# Feature importance
+print("\nUser Model Feature Importance:")
+for feature, importance in zip(user_features, user_model.feature_importances_):
+    print(f"{feature}: {importance:.4f}")
+
+print("\nBooking Model Feature Importance:")
+for feature, importance in zip(booking_features, booking_model.feature_importances_):
+    print(f"{feature}: {importance:.4f}")
+
+print("\nTraining complete!")
