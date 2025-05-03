@@ -1,0 +1,246 @@
+{
+  "user_model": {
+    "predictions": 1984,
+    "last_trained": "2025-04-22",
+    "accuracy": 0.95,
+    "precision": 0.85,
+    "recall": 0.89,
+    "f1_score": 0.84,
+    "confusion_matrix": {
+      "true_positives": 44,
+      "false_positives": 13,
+      "true_negatives": 143,
+      "false_negatives": 8
+    },
+    "feature_importance": [
+      {
+        "name": "total_tickets",
+        "importance": 0.35
+      },
+      {
+        "name": "booking_count",
+        "importance": 0.25
+      },
+      {
+        "name": "distinct_payment_methods",
+        "importance": 0.3
+      },
+      {
+        "name": "distinct_ip_addresses",
+        "importance": 0.1
+      }
+    ]
+  },
+  "booking_model": {
+    "predictions": 2971,
+    "last_trained": "2025-04-29",
+    "accuracy": 0.93,
+    "precision": 0.87,
+    "recall": 0.84,
+    "f1_score": 0.88,
+    "confusion_matrix": {
+      "true_positives": 36,
+      "false_positives": 16,
+      "true_negatives": 143,
+      "false_negatives": 7
+    },
+    "feature_importance": [
+      {
+        "name": "num_tickets",
+        "importance": 0.4
+      },
+      {
+        "name": "payment_method",
+        "importance": 0.15
+      },
+      {
+        "name": "ip_address",
+        "importance": 0.1
+      },
+      {
+        "name": "user_booking_count",
+        "importance": 0.2
+      },
+      {
+        "name": "user_avg_tickets",
+        "importance": 0.15
+      }
+    ]
+  },
+  "recent_predictions": [
+    {
+      "timestamp": "2025-05-03T06:44:56.054328",
+      "type": "user",
+      "id": "user_904",
+      "result": "fraud",
+      "confidence": 0.7909807989055195
+    },
+    {
+      "timestamp": "2025-05-03T04:10:56.054328",
+      "type": "user",
+      "id": "user_963",
+      "result": "legitimate",
+      "confidence": 0.826301083430427
+    },
+    {
+      "timestamp": "2025-05-03T00:53:56.054328",
+      "type": "booking",
+      "id": "booking_821",
+      "result": "fraud",
+      "confidence": 0.7018931736617078
+    },
+    {
+      "timestamp": "2025-05-02T22:10:56.054328",
+      "type": "user",
+      "id": "user_155",
+      "result": "legitimate",
+      "confidence": 0.9267605432842176
+    },
+    {
+      "timestamp": "2025-05-01T19:48:56.054328",
+      "type": "user",
+      "id": "user_290",
+      "result": "legitimate",
+      "confidence": 0.9197036333360404
+    },
+    {
+      "timestamp": "2025-05-01T17:00:56.054328",
+      "type": "user",
+      "id": "user_203",
+      "result": "fraud",
+      "confidence": 0.6013827923243679
+    },
+    {
+      "timestamp": "2025-05-01T09:08:56.054328",
+      "type": "user",
+      "id": "user_209",
+      "result": "legitimate",
+      "confidence": 0.9420037005178354
+    },
+    {
+      "timestamp": "2025-05-01T05:05:56.054328",
+      "type": "booking",
+      "id": "booking_866",
+      "result": "fraud",
+      "confidence": 0.9703945083528993
+    },
+    {
+      "timestamp": "2025-04-30T07:20:56.054328",
+      "type": "booking",
+      "id": "booking_836",
+      "result": "fraud",
+      "confidence": 0.8167173627912935
+    },
+    {
+      "timestamp": "2025-04-30T06:34:56.054328",
+      "type": "booking",
+      "id": "booking_783",
+      "result": "legitimate",
+      "confidence": 0.8010158104051341
+    },
+    {
+      "timestamp": "2025-04-29T17:31:56.054328",
+      "type": "user",
+      "id": "user_563",
+      "result": "fraud",
+      "confidence": 0.8279049352616678
+    },
+    {
+      "timestamp": "2025-04-29T16:16:56.054328",
+      "type": "user",
+      "id": "user_423",
+      "result": "legitimate",
+      "confidence": 0.9274008413678381
+    },
+    {
+      "timestamp": "2025-04-29T09:03:56.054328",
+      "type": "user",
+      "id": "user_603",
+      "result": "legitimate",
+      "confidence": 0.6959111364160332
+    },
+    {
+      "timestamp": "2025-04-29T07:59:56.054328",
+      "type": "user",
+      "id": "user_571",
+      "result": "legitimate",
+      "confidence": 0.853080951549383
+    },
+    {
+      "timestamp": "2025-04-28T13:18:56.054328",
+      "type": "booking",
+      "id": "booking_791",
+      "result": "fraud",
+      "confidence": 0.8063853878589035
+    },
+    {
+      "timestamp": "2025-04-28T08:50:56.054328",
+      "type": "user",
+      "id": "user_544",
+      "result": "legitimate",
+      "confidence": 0.8673298962254671
+    },
+    {
+      "timestamp": "2025-04-28T02:26:56.054328",
+      "type": "booking",
+      "id": "booking_995",
+      "result": "fraud",
+      "confidence": 0.8828504760672781
+    },
+    {
+      "timestamp": "2025-04-27T19:05:56.054328",
+      "type": "user",
+      "id": "user_945",
+      "result": "fraud",
+      "confidence": 0.6717465076815283
+    },
+    {
+      "timestamp": "2025-04-25T20:19:56.054328",
+      "type": "booking",
+      "id": "booking_368",
+      "result": "fraud",
+      "confidence": 0.8079752433291546
+    },
+    {
+      "timestamp": "2025-04-25T17:21:56.054328",
+      "type": "booking",
+      "id": "booking_277",
+      "result": "fraud",
+      "confidence": 0.791334534732377
+    }
+  ],
+  "prediction_history": {
+    "dates": [
+      "2024-12",
+      "2025-01",
+      "2025-02",
+      "2025-03",
+      "2025-04",
+      "2025-05"
+    ],
+    "user_predictions": [
+      129,
+      129,
+      135,
+      117,
+      100,
+      143
+    ],
+    "booking_predictions": [
+      201,
+      208,
+      152,
+      187,
+      191,
+      219
+    ],
+    "fraud_detected": [
+      33,
+      24,
+      17,
+      20,
+      25,
+      13
+    ]
+  }
+}
